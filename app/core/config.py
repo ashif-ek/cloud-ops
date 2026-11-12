@@ -5,10 +5,7 @@ class Settings(BaseSettings):
     app_name: str = "CloudOps Task Manager"
     environment: str = "development"
 
-    database_url: str = (
-        "postgresql+psycopg://postgres:1234567890"
-        "@localhost:5432/cloudops_db"
-    )
+    database_url: str
 
     model_config = SettingsConfigDict(
         env_file=".env",

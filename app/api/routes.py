@@ -16,9 +16,7 @@ def home():
 
 @router.get("/health/live")
 def liveness():
-    return {
-        "status": "alive",
-    }
+    return {"status": "alive"}
 
 
 @router.get("/health/ready")
