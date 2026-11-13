@@ -13,3 +13,8 @@ class TaskResponse(BaseModel):
     completed: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+class TaskUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    completed: bool | None = None
