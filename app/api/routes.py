@@ -1,17 +1,16 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
-from app.db.database import check_database
-
+from app.db.database import get_db
+from app.db.models import Task
+from app.schemas import TaskCreate, TaskResponse
 
 router = APIRouter()
 
 
 @router.get("/")
 def home():
-    return {
-        "message": "Welcome to CloudOps Task Manager",
-        "status": "running",
-    }
+    return {"message": "CloudOps Task Manager is running"}
 
 
 @router.get("/health/live")
@@ -20,20 +19,45 @@ def liveness():
 
 
 @router.get("/health/ready")
-def readiness():
-    try:
-        check_database()
+def readiness(db: Session = Depends(get_db)):
+    from sqlalchemy import text
 
-        return {
-            "status": "ready",
-            "database": "connected",
-        }
+    db.execute(text("SELECT 1"))
+    return {"status": "ready", "database": "connected"}
 
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={
-                "status": "not_ready",
-                "database": "unavailable",
-            },
-        )
+
+@router.post("/tasks", response_model=TaskResponse, status_code=201)
+def create_task(task: TaskCreate, db: Session = Depends(get_db)):
+    new_task = Task(**task.model_dump())
+
+    db.add(new_task)
+    db.commit()
+    db.refresh(new_task)
+
+    return new_task
+
+
+@router.get("/tasks", response_model=list[TaskResponse])
+def get_tasks(db: Session = Depends(get_db)):
+    return db.query(Task).all()
+
+
+@router.get("/tasks/{task_id}", response_model=TaskResponse)
+def get_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.get(Task, task_id)
+
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    return task
+
+
+@router.delete("/tasks/{task_id}", status_code=204)
+def delete_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.get(Task, task_id)
+
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    db.delete(task)
+    db.commit()
