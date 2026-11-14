@@ -1,0 +1,39 @@
+
+name: CloudOps CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-build:
+    name: Test and Build
+    runs-on: ubuntu-latest
+#The SQLite URL is intentional GitHub's runner doesn't need access to our local PostgreSQL database. our tests use their own isolated test database
+    env:
+      APP_NAME: CloudOps Task Manager
+      ENVIRONMENT: testing
+      DATABASE_URL: sqlite:///./ci.db
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Run automated tests
+        run: uv run pytest -v
+
+      - name: Build Docker image
+        run: docker build -t cloudops-task-manager:ci .
