@@ -1,0 +1,28 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudops-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudops-api
+  template:
+    metadata:
+      labels:
+        app: cloudops-api
+    spec:
+      containers:
+        - name: cloudops-api
+          image: cloudops-platform-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: APP_NAME
+              value: "CloudOps Task Manager"
+            - name: ENVIRONMENT
+              value: "production"
+            - name: DATABASE_URL
+              value: "postgresql+psycopg://postgres:1234567890@cloudops-postgres-tf:5432/cloudops_db"

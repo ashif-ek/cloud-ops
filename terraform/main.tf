@@ -12,15 +12,18 @@ provider "docker" {
   host = "npipe:////./pipe/docker_engine"
 }
 
+# Dedicated network for CloudOps containers
 resource "docker_network" "cloudops_network" {
   name = "cloudops-network"
 }
 
+# PostgreSQL image
 resource "docker_image" "postgres" {
   name         = "postgres:17-alpine"
   keep_locally = true
 }
 
+# PostgreSQL container
 resource "docker_container" "postgres" {
   name  = "cloudops-postgres-tf"
   image = docker_image.postgres.image_id
@@ -43,19 +46,10 @@ resource "docker_container" "postgres" {
   restart = "unless-stopped"
 }
 
-resource "docker_image" "api" {
-  name = "cloudops-task-manager:terraform"
-
-  build {
-    context = ".."
-  }
-
-  keep_locally = true
-}
-
+# FastAPI container using the image built by Docker Compose
 resource "docker_container" "api" {
   name  = "cloudops-api-tf"
-  image = docker_image.api.image_id
+  image = "cloudops-platform-app:latest"
 
   networks_advanced {
     name = docker_network.cloudops_network.name
