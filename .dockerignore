@@ -8,3 +8,8 @@ __pycache__/
 tests/
 *.pyc
 README.md
+
+terraform/terraform.tfvars
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
