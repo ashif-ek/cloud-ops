@@ -25,4 +25,4 @@ spec:
             - name: ENVIRONMENT
               value: "production"
             - name: DATABASE_URL
-              value: "postgresql+psycopg://postgres:1234567890@cloudops-postgres-tf:5432/cloudops_db"
+              value: "postgresql+psycopg://postgres:1234567890@cloudops-postgres:5432/cloudops_db"
